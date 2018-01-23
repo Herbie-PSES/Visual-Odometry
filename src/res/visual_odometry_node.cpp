@@ -8,7 +8,7 @@
 //#include <opencv/highgui.h>
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/opencv.hpp>
-//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.cpp>
 
 #include <ctime>
 #include <iostream>
@@ -39,7 +39,6 @@ private:
      Ptr<FeatureDetector> detector;
      Mat cameraMatrix;
      vector<Mat> poses;
-     Mat traj;
 
 };
 
@@ -50,7 +49,7 @@ node_class::node_class()
     _firstImage =1;
     float camera_parameters[10] = {540.68603515625, 0.0, 479.75, 0.0, 540.68603515625, 269.75, 0.0, 0.0, 1.0};
     cameraMatrix = Mat(3, 3, CV_32F, camera_parameters);
-    poses.push_back(Mat::eye(4,4,CV_64F));
+    poses.push_back(Mat::eye(4,4,CV_32F));
 
 }
 
@@ -101,7 +100,7 @@ void node_class::imageCallback(const sensor_msgs::Image::ConstPtr& imagMsg)
 
     // at the moment features get less with each picture, because the old keypoints of first picture are matched overall
 
-    featureTracking(img_last, img_current, points_last, points_current, status);
+    //featureTracking(img_last, img_current, points_last, points_current, status);
 
     img_last = img_current; // could become problematic
 
@@ -149,31 +148,14 @@ void node_class::imageCallback(const sensor_msgs::Image::ConstPtr& imagMsg)
     //recover Angles from R
     Mat r;
     Rodrigues(R,r);
-    Mat R_t,R_t2;
+    Mat R_t;
     hconcat(R,t,R_t);
-    double normal_add[4] = {0,0,0,1};
-    //cout << Mat(1,4,CV_64F,normal_add) << endl;
-    //cout << R_t.type() << endl;
-    //cout << Mat(1,4,R_t.type(),normal_add) << endl;
-    vconcat(R_t,Mat(1,4,CV_64F,normal_add),R_t);
-    //cout << R_t << endl;
-    R_t = poses.back()*R_t;
+    vconcat(R_t,Mat(1,4,CV_32F,{0,0,0,1}),R_t);
+    R_t = R_t*poses.back();
     poses.push_back(R_t);
-    cout << R_t << endl;
-    cout << R_t.col(3) << endl;
-
-    //Mat traj = Mat::zeros(600,600,CV_8UC3);
-
-
+    /*
     // baue t_f
-    char text[100];
-    int fontFace = FONT_HERSHEY_PLAIN;
-    double fontScale = 1;
-    int thickness = 1;
-    cv::Point textOrg(10, 50);
-
-    Mat t_f = R_t.col(3);
-
+    Mat traj = Mat::zeros(600, 600, CV_8UC3);
     int x = int(t_f.at<double>(0)) + 300;
     int y = int(t_f.at<double>(2)) + 100;
     circle(traj, Point(x, y) ,1, CV_RGB(255,0,0), 2);
@@ -184,15 +166,14 @@ void node_class::imageCallback(const sensor_msgs::Image::ConstPtr& imagMsg)
 
     imshow( "Trajectory", traj );
 
-    //waitKey(1);
-
-
+    waitKey(1);
+    */
 
     cv::imshow( "Display window", outimage );
     cv::waitKey(3); // waits for key input
 
-    //cout << r << endl;
-    //cout << t << endl;
+    cout << r << endl;
+    cout << t << endl;
 
 
 }
@@ -203,8 +184,6 @@ void node_class::run_once()
     image_sub = i_trans.subscribe("/kinect2/qhd/image_color", 1, &node_class::imageCallback, this);
      //detector = ORB::create(); // add parameters if needed
      cv::namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-     cv::namedWindow("Trajectory",WINDOW_AUTOSIZE);
-     traj = Mat::zeros(600, 600, CV_8UC3);
 }
 
 

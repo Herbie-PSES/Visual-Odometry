@@ -140,6 +140,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/visual_odometry_node.cpp)
 add_executable(visual_odometry_node src/visual_odometry_node.cpp)
+add_executable(imgsaver_node  src/imgsaver_node.cpp)
 add_executable(picture_publisher_node src/picture_publisher_node.cpp)
 
 ## Rename C++ executable without prefix
@@ -154,11 +155,17 @@ add_executable(picture_publisher_node src/picture_publisher_node.cpp)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(visual_odometry_node
-   ${catkin_LIBRARIES} ${opencv_LIBRARIES} ${PCL_LIBRARIES}
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES}
  )
 
+
  target_link_libraries(picture_publisher_node
-   ${catkin_LIBRARIES} ${opencv_LIBRARIES} ${PCL_LIBRARIES}
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES}
+ )
+
+
+ target_link_libraries(imgsaver_node 
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES}
  )
 
 #############
